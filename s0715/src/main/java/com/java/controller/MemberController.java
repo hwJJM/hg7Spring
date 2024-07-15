@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/member")
 public class MemberController {
+	//주석입니다. 깃 확인용
 	@Autowired
 	HttpSession session;
 	
