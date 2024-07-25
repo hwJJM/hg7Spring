@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!--익스레이어팝업-->
 <div id="ieUser" style="display:none">
 	<div class="iewrap">	
@@ -67,9 +68,15 @@
 			</div>
 			<div id="snb">
 				<ul>
-					<li><a href="#">LOGIN</a></li>
+				<c:if test="${sessionId ==null }">
+					<li><a href="/member/login">LOGIN</a></li>
 					<li><a href="#">JOIN</a></li>
-					<li><a href="#">MY PAGE</a></li>
+				</c:if>
+				<c:if test="${sessionId != null }">
+					<li><a href="#">${sessionName }</a></li>
+					<li><a href="/member/logout">LOGOUT</a></li>
+				</c:if>
+					<li><a href="/member/mlist">MY PAGE</a></li>
 					<li><a href="#">CART</a></li>
 				</ul>
 

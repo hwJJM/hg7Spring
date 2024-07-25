@@ -73,4 +73,25 @@
 		where btitle like '%'||#{s_word}||'%' or bcontent like '%'||#{s_word}||'%'
 		</if>
 	</select>
+	<!-- 댓글관련 쿼리 -->
+	<select id="selectComAll" resultType="com.java.dto.Comment">
+		select*from commentBoard where bno=#{bno} order by cno desc
+	</select>
+	<insert id="commentInsert">
+		<selectKey resultType="int" keyProperty="cno" order="BEFORE">
+			<!-- cno를 먼저 저장한 다음 가 -->
+			select comment_seq.nextval from dual
+		</selectKey>
+		insert into commentBoard values(#{cno}, #{bno}, #{id}, #{cpw}, sysdate,#{ccontent})
+	</insert>
+	<select id="selectComOne" resultType="com.java.dto.Comment">
+		select*from commentBoard where cno = #{cno}
+	</select>
+	<delete id="commentDelete">
+		delete from commentboard where cno=#{cno}
+	</delete>
+	<update id="commentUpdate">
+		update commentBoard set cpw=#{cpw}, ccontent=#{ccontent}, cdate=sysdate where cno=#{cno}
+	</update>
+
 </mapper>

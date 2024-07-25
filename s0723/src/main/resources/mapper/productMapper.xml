@@ -1,0 +1,21 @@
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.java.mapper.PMapper">
+	<select id="selectAll" resultType="com.java.dto.Product">
+		select*from product order by pno desc
+	</select>
+	<insert id="insertOne">
+		<selectKey resultType="int" keyProperty="pno" order="BEFORE">
+		<!-- pno 정보를 가져와야함 -->
+			select p_seq.nextval from dual  <!-- pno를 의미함 -->
+		</selectKey> 
+		<!-- 먼저 pno를 가져온 후 그 pno를 insert함 -->
+		insert into product values(
+		#{pno}, #{name}, #{price}, #{category}, sysdate
+		)
+	</insert>
+	<select id="selectOne" resultType="com.java.dto.Product">
+		select*from product where pno=#{pno}
+	</select>
+</mapper>

@@ -22,6 +22,7 @@
 <script type="text/javascript" src="../js/jquery.easing.1.3.js"></script>
 <script type="text/javascript" src="../js/idangerous.swiper-2.1.min.js"></script>
 <script type="text/javascript" src="../js/jquery.anchor.js"></script>
+<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 <!--[if lt IE 9]>
 <script type="text/javascript" src="../js/html5.js"></script>
 <script type="text/javascript" src="../js/respond.min.js"></script>
@@ -117,33 +118,190 @@ $(document).ready(function() {
 					</div>
 					<!-- //이전다음글 -->
 
+<script type="text/javascript">
+	function commentBtn(){
+		//alert("등록");
+		//alert("비밀번호 : "+$(".replynum").val())
+		//alert("내용 : "+$(".replyType").val())
+		
+		let ccontent = $(".replyType").val();
+		let cpw = $(".replynum").val();
+		let id = "${sessionId}";
+		let bno = "${board.bno}";
+		//로그인 하지 않으면 글을 쓸 수 없게 막아놓음
+		if(id==""){
+			alert("로그인하셔야 댓글을 다실 수 있습니다.");
+			location.href="/member/login";
+		}
+		$.ajax({
+			url:"/board/commentInsert",
+			method:"post",
+			data:{"id":id, "cpw":cpw, "ccontent":ccontent, "bno":bno},
+			success: function(data){
+				//alert('성공');
+				//console.log(data);
+				let str='';
+				str+='<ul id='+data.cno+'>';
+				str+='<li class="name">'+data.id+' <span>['+data.cdate+']</span></li>';
+				str+='<li class="txt">'+data.ccontent+'</li>';
+				str+='<li class="btn">';
+				str+='<a onclick="updateBtn('+data.cno+',\''+data.id+'\',\''+data.cdate+'\',\''+data.ccontent+'\')" class="rebtn">수정</a>';
+				str+='&nbsp;<a onclick="deleteBtn('+data.cno+')" class="rebtn">삭제</a>';
+				str+='</li>';
+				str+='</ul>';
+				$(".replyBox").prepend(str);
+				
+				var n = $("#comNum").text();
+				console.log(n);	//기존 댓글 수 
+				console.log(typeof(n));	//문자열이다
+				//javascript에서 문자를 숫자 Number()
+				//$("#comNum").html(Number(n)+1);
+				$("#comNum").text(Number(n)+1);
+				$(".replyType").val("");
+				$(".replynum").val("");
+				
+			},
+			error : function(){
+				alert('실패');
+			}
+		});//ajax
+	
+		
+///////////-------------------댓글삭제-----------		
+	}
+		function deleteBtn(cno){
+			//alert(cno);
+			if(confirm("댓글을 삭제하시겠습니까?")){
+				//alert("삭제 : "+cno);
+				//$("#"+cno).remove(); //html 상에서 해당 id(cno) 삭제됨, db에는 남아있음
+				$.ajax({
+					url:"/board/commentDelete",
+					method:"post",
+					data:{"cno":cno},
+					success:function(data){
+						alert("성공");
+						console.log(data);
+						//html에서 제거하기
+						$("#"+cno).remove();
+						//총 댓글 수 수정
+						var commentNum =Number($("#comNum").text())-1;
+						$("#comNum").text(commentNum);
+					},
+					error:function(){
+						alert("실패");
+					}
+				});//ajax
+			}//if-confirm
+		}//deleteBtn
+//-----------------댓글 수정		
+		function updateBtn(cno, id, cdate, ccontent){
+			if(confirm("댓글을 수정하시겠습니까?")){
+				
+			//alert(cno);	alert(id);	alert(cdate);	alert(ccontent);
+			let str = '';
+			
+			str+='<li class="name">' +id+ '<span>['+cdate+']</span>';
+			str+='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;비밀번호&nbsp;&nbsp;';
+			str+='<input type="password" class="replynum" id="updatePw" />';
+			str+='</li>';
+			str+='<li class="txt"><textarea id="updateContent" class="replyType">'+ccontent+'</textarea></li>';
+			str+='<li class="btn">';
+			str+='<a onclick="updateSave('+cno+')" class="rebtn">저장</a>&nbsp;&nbsp;&nbsp;';
+			str+='<a onclick="cancelBtn('+cno+',\''+id+'\',\''+cdate+'\',\''+ccontent+'\')" class="rebtn">취소</a>';
+			str+='</li>';
+			
+			
+			$("#"+cno).html(str);
+			}//if-confirm
+		}//updateBtn
+//--------------원래대로 되돌리기
+		function cancelBtn(cno,id,cdate,ccontent){
+			//alert("취소버튼");
+		console.log(cno);
+		console.log(id);
+		console.log(cdate);
+		console.log(ccontent);
+		var str='';
+		str+='<li class="name"> '+id+' <span> '+cdate+' </span></li>';
+		str+='<li class="txt"> '+ccontent+' </li>';
+		str+='<li class="btn">';
+		str+='<a onclick="updateBtn('+cno+',\''+id+'\',\''+cdate+'\',\''+ccontent+'\')" class="rebtn">수정</a>';
+		str+='&nbsp;<a onclick="deleteBtn('+cno+')" class="rebtn">삭제</a>';
+		str+='</li>';
+		$("#"+cno).html(str);
+		}
+//--------- 수정된 값 저장하기
+function updateSave(cno){
+	alert(cno);
+	//입력한 cpw, 내용을 가져와서 콘솔에 출력해본다
+	//console.log($("#updateContent").val());
+	//console.log($("#updatePw").val());
+	if(confirm("저장하시겠습니까?")){
+		
+		$.ajax({
+			url:"/board/commentUpdate",
+			method:"post",
+			data:{"cno":cno, "cpw":$("#updatePw").val(), "ccontent":$("#updateContent").val()},
+			success:function(data){
+				alert("댓글 수정 성공");
+				console.log(data);
+				var str='';
+				str+='<li class="name"> '+data.id+' <span> '+data.cdate+' </span></li>';
+				str+='<li class="txt"> '+data.ccontent+' </li>';
+				str+='<li class="btn">';
+				str+='<a onclick="updateBtn('+data.cno+',\''+data.id+'\',\''+data.cdate+'\',\''+data.ccontent+'\')" class="rebtn">수정</a>';
+				str+='&nbsp;<a onclick="deleteBtn('+data.cno+')" class="rebtn">삭제</a>';
+				str+='</li>';
+				$("#"+cno).html(str);
+			},
+			error:function(){
+				alert("실패");
+			}
+		})//ajax
+	}//confirm
+}
+</script>
 
 					<!-- 댓글-->
 					<div class="replyWrite">
 						<ul>
 							<li class="in">
-								<p class="txt">총 <span class="orange">3</span> 개의 댓글이 달려있습니다.</p>
+								<p class="txt">총 <span class="orange" id="comNum">${comList.size() }</span> 개의 댓글이 달려있습니다.</p>
 								<p class="password">비밀번호&nbsp;&nbsp;<input type="password" class="replynum" /></p>
 								<textarea class="replyType"></textarea>
 							</li>
-							<li class="btn"><a href="#" class="replyBtn">등록</a></li>
+							<li class="btn"><a onclick="commentBtn()" class="replyBtn">등록</a></li>
 						</ul>
 						<p class="ntic">※ 비밀번호를 입력하시면 댓글이 비밀글로 등록 됩니다.</p>
 					</div>
 
 					<div class="replyBox">
-						<ul>
-							<li class="name">jjabcde <span>[2014-03-04&nbsp;&nbsp;15:01:59]</span></li>
-							<li class="txt"><textarea class="replyType"></textarea></li>
-							<li class="btn">
-								<a href="#" class="rebtn">수정</a>
-								<a href="#" class="rebtn">삭제</a>
-							</li>
-						</ul>
+						
+						<c:forEach var="cdto" items="${comList }">
+							<ul id="${cdto.cno }">
+								<li class="name">${cdto.id } <span>${cdto.cdate }</span></li>
+							<!-- 비밀글일때  아이디와 세션아이디 일치할 때만 보여야함. 비밀번호 있을 때만 비밀글-->
+								<c:if test="${ sessionId != cdto.id && cdto.cpw !=null }">
+								  <li class="txt"><span class="orange">※ 비밀글입니다.</span></li>
+								</c:if>
+							<!-- 비밀글아닐때 -->
+								<c:if test="${ !(sessionId != cdto.id && cdto.cpw !=null) }">
+									<li class="txt">${cdto.ccontent }</li>
+								</c:if>
+								<!-- 댓글 쓴 아이디와 로그인한 아이디(세션아이디)가 같을 경우만 버튼을 노출함 -->
+								<c:if test="${sessionId==cdto.id }">
+								<li class="btn">
+									<a onclick="updateBtn(${cdto.cno },'${cdto.id }','${cdto.cdate }','${cdto.ccontent }')" class="rebtn">수정</a>
+									<a onclick="deleteBtn(${cdto.cno })" class="rebtn">삭제</a>
+								</li>
+								</c:if>
+							</ul>
+						</c:forEach>
 
-						<ul>
+
+						<%-- <ul>
 							<li class="name">jjabcde <span>[2014-03-04&nbsp;&nbsp;15:01:59]</span></li>
-							<li class="txt">대박!!! 이거 저한테 완전 필요한 이벤트였어요!!</li>
+							<li class="txt">댑가!!!</li>
 							<li class="btn">
 								<a href="#" class="rebtn">수정</a>
 								<a href="#" class="rebtn">삭제</a>
@@ -153,9 +311,9 @@ $(document).ready(function() {
 						<ul>
 							<li class="name">jjabcde <span>[2014-03-04&nbsp;&nbsp;15:01:59]</span></li>
 							<li class="txt">
-								<a href="password.html" class="passwordBtn"><span class="orange">※ 비밀글입니다.</span></a>
+								<span class="orange">※ 비밀글입니다.</span>
 							</li>
-						</ul>
+						</ul> --%>
 					</div>
 					<!-- //댓글 -->
 

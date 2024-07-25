@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.java.dto.Board;
+import com.java.dto.Comment;
 import com.java.mapper.BMapper;
 
 @Service
@@ -61,6 +62,44 @@ public class BServiceImpl implements BService {
 //		System.out.println("next-bno"+next.getBno());
 		
 		return map;
+	}
+	
+	//------------------------댓글 관련-------------------------- 
+	@Override
+	public ArrayList<Comment> selectComAll(int bno) {
+		ArrayList<Comment> list = bMapper.selectComAll(bno);
+		return list;
+	}
+	@Override
+	public Comment commentInsert(Comment comdto) {
+		System.out.println("before");
+		System.out.println("bservice cno : "+comdto.getCno());
+		System.out.println("bservice id : "+comdto.getId());
+		System.out.println("bservice cdate : "+comdto.getCdate());
+		bMapper.commentInsert(comdto);
+		System.out.println("after");
+		System.out.println("bservice cno : "+comdto.getCno());
+		System.out.println("bservice id : "+comdto.getId());
+		System.out.println("bservice cdate : "+comdto.getCdate());
+		
+		//하단 댓글 1개 가져오기
+		Comment cdto = bMapper.selectComOne(comdto);
+		
+		return cdto;
+	}
+	@Override
+	public void commentDelete(int cno) {
+		bMapper.commentDelete(cno);
+		
+	}
+	@Override
+	public Comment commentUpdate(Comment cdto) {
+		//하단 댓글 수정저장
+		//수정내용 업데이트하기
+		bMapper.commentUpdate(cdto);
+		//내용가져오기
+		Comment comment = bMapper.selectComOne(cdto);
+		return comment;
 	}
 
 }

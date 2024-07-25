@@ -58,8 +58,34 @@
 						}
 					});//ajax
 				});//ajaxBtn
-				
-				
+				$("#dbBtn").on("click",function(){
+					//alert("버튼3");
+					$.ajax({
+						url:"/member/selectAll",
+						method: "post",
+						success: function(data){
+							alert('성공');
+							console.log(data);
+							//표에 출력하기
+							let str='';
+							for(let i=0;i<data.length;i++){
+								str+='<tr>';
+								str+='<td>'+data[i].id+'</td>';
+								str+='<td>'+data[i].name+'</td>';
+								str+='<td>'+data[i].phone+'</td>';
+								str+='<td>'+data[i].gender+'</td>';
+								str+='</tr>';
+							}
+							//$("#btable").html(str);
+							//$("#btable").append(str);
+							$("#btable").prepend(str); 
+						},
+						error: function(){
+							alert('실패');
+						}
+					});//ajax
+					
+				});//dbBtn
 			});//jquery
 		</script>
 	</head>
@@ -68,6 +94,7 @@
 		<p id="text"></p>
 		<button id="loadBtn">load</button>
 		<button id="ajaxBtn">ajax</button>
+		<button id="dbBtn">DB</button>
 		<table>
 			<tr>
 				<td>번호</td>
